@@ -9,6 +9,7 @@ from django.contrib import messages
 from datetime import datetime
 import logging
 import json
+from django.contrib.auth.forms import AuthenticationForm,UserCreationForm
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
@@ -23,17 +24,38 @@ def about(request):
 def contact(request):
     return render(request, 'djangoapp/contact.html')
 
-# Create a `login_request` view to handle sign in request
-# def login_request(request):
-# ...
+def login_request(request):
+    if request.method == 'POST':
+        form = AuthenticationForm(request, data=request.POST)
+        if form.is_valid():
+            username = form.cleaned_data.get('username')
+            password = form.cleaned_data.get('password')
+            user = authenticate(username=username, password=password)
+            if user is not None:
+                login(request, user)
+                return redirect('djangoapp:index')
+    else:
+        form = AuthenticationForm()
+    return render(request, 'djangoapp/login.html', {'form': form})
 
-# Create a `logout_request` view to handle sign out request
-# def logout_request(request):
-# ...
+def logout_request(request):
+    logout(request)
+    return redirect('djangoapp:index')
 
-# Create a `registration_request` view to handle sign up request
-# def registration_request(request):
-# ...
+def signup_request(request):
+    if request.method == 'POST':
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            # log in the user
+            username = form.cleaned_data.get('username')
+            raw_password = form.cleaned_data.get('password1')
+            user = authenticate(username=username, password=raw_password)
+            login(request, user)
+            return redirect('djangoapp:index')        
+    else:
+        form = UserCreationForm()
+    return render(request, 'djangoapp/registration.html', {'form': form})
 
 # Update the `get_dealerships` view to render the index page with a list of dealerships
 def get_dealerships(request):
