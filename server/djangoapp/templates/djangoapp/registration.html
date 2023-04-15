@@ -23,24 +23,44 @@
             </div>
         {% endif %}
         <div class="form-group">
-            <label for="{{ form.first_name.id_for_label }}">First Name:</label>
-            {{ form.first_name }}
+            <div>
+                <label for="{{ form.first_name.id_for_label }}">First Name:</label>
+            </div>
+            <div>
+                {{ form.first_name }}
+            </div>
         </div>
         <div class="form-group">
-            <label for="{{ form.last_name.id_for_label }}">Last Name:</label>
-            {{ form.last_name }}
+            <div>
+                <label for="{{ form.last_name.id_for_label }}">Last Name:</label>
+            </div>
+            <div>
+                {{ form.last_name }}
+            </div>
         </div>
         <div class="form-group">
-            <label for="{{ form.username.id_for_label }}">Username:</label>
-            {{ form.username }}
+            <div>
+                <label for="{{ form.username.id_for_label }}">Username:</label>
+            </div>
+            <div>
+                {{ form.username }}
+            </div>
         </div>
         <div class="form-group">
-            <label for="{{ form.password1.id_for_label }}">Password:</label>
-            {{ form.password1 }}
+            <div>
+                <label for="{{ form.password1.id_for_label }}">Password:</label>
+            </div>
+            <div>
+                {{ form.password1 }}
+            </div>
         </div>
         <div class="form-group">
-            <label for="{{ form.password2.id_for_label }}">Confirm Password:</label>
-            {{ form.password2 }}
+            <div>
+                <label for="{{ form.password2.id_for_label }}">Confirm Password:</label>
+            </div>
+            <div>
+                {{ form.password2 }}
+            </div>
         </div>
         <button type="submit" class="btn btn-primary">Sign Up</button>
     </form>
