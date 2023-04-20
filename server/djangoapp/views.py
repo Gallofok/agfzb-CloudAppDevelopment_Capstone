@@ -61,7 +61,7 @@ def signup_request(request):
 
 def get_dealerships(request):
     if request.method == "GET":
-        url = "https://eu-de.functions.appdomain.cloud/api/v1/web/f531064e-b99e-4139-b829-b8a7b8d85715/dealership-package/get_D_seq.json"
+        url = "https://eu-de.functions.appdomain.cloud/api/v1/web/f531064e-b99e-4139-b829-b8a7b8d85715/dealership-package/get_dealer_list.json"
         # Get dealers from the URL
         dealerships = restapis.get_dealers_from_cf(url)
         # Concat all dealer's short name
@@ -76,8 +76,14 @@ def get_dealerships(request):
 #         return render(request, 'djangoapp/index.html', context)
 
 # Create a `get_dealer_details` view to render the reviews of a dealer
-# def get_dealer_details(request, dealer_id):
-# ...
+def get_dealer_details(request, ):
+    dealer_id = 15
+    if request.method == "GET":
+        url = "https://eu-de.functions.appdomain.cloud/api/v1/web/f531064e-b99e-4139-b829-b8a7b8d85715/review-package/give_review_dealer.json"
+        # Get dealers from the URL
+        reviews = restapis.get_dealer_by_id(url,dealer_id)
+        # Return a list of dealer short name
+        return HttpResponse(reviews)
 
 # Create a `add_review` view to submit a review
 # def add_review(request, dealer_id):
