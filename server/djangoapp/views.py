@@ -75,15 +75,33 @@ def get_dealerships(request):
 #     if request.method == "GET":
 #         return render(request, 'djangoapp/index.html', context)
 
-# Create a `get_dealer_details` view to render the reviews of a dealer
-def get_dealer_details(request, ):
+#look the specific dealer information
+def get_dealer_id(request, ):
     dealer_id = 15
     if request.method == "GET":
         url = "https://eu-de.functions.appdomain.cloud/api/v1/web/f531064e-b99e-4139-b829-b8a7b8d85715/dealership-package/dealergetbyid.json"
         # Get dealers from the URL
-        reviews = restapis.get_dealer_by_id_from_cf(url,dealer_id)
+        reviews = restapis.get_dealer_by_id(url,dealer_id)
         # Return a list of dealer short name
         return HttpResponse(reviews)
+
+
+# Create a `get_dealer_details` view to render the reviews of a dealer
+def get_dealer_details(request, ):
+    dealer_id = 15
+    if request.method == "GET":
+        url = "https://eu-de.functions.appdomain.cloud/api/v1/web/f531064e-b99e-4139-b829-b8a7b8d85715/review-package/give_review_dealer.json"
+        # Get dealers from the URL
+        reviews = restapis.get_dealer_reviews_from_cf(url,dealer_id)
+        # Return a list of dealer short name
+        return HttpResponse(reviews)
+
+#call Watson NLU for analyzing the sentiment/tone for each review
+def get_dealer_reviews_from_cf():
+    pass
+
+
+
 
 # Create a `add_review` view to submit a review
 # def add_review(request, dealer_id):

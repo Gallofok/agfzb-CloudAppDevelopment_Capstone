@@ -38,8 +38,17 @@ class CarDealer:
         self.short_name = short_name
         self.full_name = full_name
 
+
     def __str__(self):
-        return "Dealer name: " + self.full_name
+        return "Dealer name: " + self.full_name + "\n" \
+                + "Address: " + self.address + "\n" \
+                + "City: " + self.city + "\n" \
+                + "State: " + self.state + "\n" \
+                + "Zip Code: " + self.zip + "\n" \
+                + "Latitude: " + str(self.lat) + "\n" \
+                + "Longitude: " + str(self.long) + "\n" \
+                + "Short Name: " + self.short_name + "\n" \
+                + "Dealer ID: " + str(self.id)
 
 
 class Review(models.Model):
@@ -53,4 +62,4 @@ class Review(models.Model):
     car_year = models.IntegerField()
 
     def __str__(self):
-        return self.name + " - " + self.car_make + " " + self.car_model + " " + str(self.car_year)
+        return self.name + " - " + self.review 
