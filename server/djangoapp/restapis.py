@@ -58,31 +58,28 @@ def get_dealers_from_cf(url, **kwargs):
 # - Call get_request() with specified arguments
 # - Parse JSON results into a DealerView object list
 
-def get_dealer_by_id(url, dealerId):
-    reviews_result = None
-    # Call get_request with a URL parameter and dealerId as a query parameter
-    json_result = get_request(url + "/Reviews/"+str(dealerId))
+def get_dealer_by_id_from_cf(url, dealerId):
+    result = None
+    data = {"id": dealerId}
+    json_result = get_request(url, data=data)
+    
     if json_result:
-            # Get the reviews objects in JSON
-            reviews = json_result["rows"]
-            
-            # Create a list of Review objects with values in the reviews objects
-            reviews_list = []
-            for review in reviews:
-                review_obj = Review(
-                    dealership=review["dealership"],
-                    name=review["name"],
-                    purchase=review["purchase"],
-                    review=review["review"],
-                    purchase_date=review["purchase_date"],
-                    car_make=review["car_make"],
-                    car_model=review["car_model"],
-                    car_year=review["car_year"],
-                )
-                reviews_list.append(review_obj)
-            
-            reviews_result = reviews_list
-    return reviews_result
+        dealer = json_result.get("docs")
+        dealer = {dealer[i]: dealer[i+1] for i in range(0, len(dealer)-5, 2)}
+        result = CarDealer(
+            address=dealer["address"], 
+            city=dealer["city"], 
+            full_name=dealer["full_name"],
+            id=dealer["id"], 
+            lat=dealer["lat"], 
+            long=dealer["long"],
+            short_name=dealer["short_name"],
+            st=dealer["st"], 
+            zip=dealer["zip"], 
+            state=dealer["state"]
+        )
+    return result
+
 
 # Create an `analyze_review_sentiments` method to call Watson NLU and analyze text
 # def analyze_review_sentiments(text):

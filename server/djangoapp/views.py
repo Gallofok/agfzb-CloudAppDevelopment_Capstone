@@ -79,9 +79,9 @@ def get_dealerships(request):
 def get_dealer_details(request, ):
     dealer_id = 15
     if request.method == "GET":
-        url = "https://eu-de.functions.appdomain.cloud/api/v1/web/f531064e-b99e-4139-b829-b8a7b8d85715/review-package/give_review_dealer.json"
+        url = "https://eu-de.functions.appdomain.cloud/api/v1/web/f531064e-b99e-4139-b829-b8a7b8d85715/dealership-package/dealergetbyid.json"
         # Get dealers from the URL
-        reviews = restapis.get_dealer_by_id(url,dealer_id)
+        reviews = restapis.get_dealer_by_id_from_cf(url,dealer_id)
         # Return a list of dealer short name
         return HttpResponse(reviews)
 
