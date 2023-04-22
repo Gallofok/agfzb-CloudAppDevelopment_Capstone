@@ -62,4 +62,4 @@ class Review(models.Model):
     car_year = models.IntegerField()
 
     def __str__(self):
-        return self.name + " - " + self.review 
+        return  self.review 

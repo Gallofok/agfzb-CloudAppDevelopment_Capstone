@@ -12,9 +12,9 @@ import json
 from django.contrib.auth.forms import AuthenticationForm,UserCreationForm
 import requests
 # Get an instance of a logger
+
+from django.http import JsonResponse
 logger = logging.getLogger(__name__)
-
-
 # Create your views here.
 
 
@@ -87,24 +87,48 @@ def get_dealer_id(request, ):
 
 
 # Create a `get_dealer_details` view to render the reviews of a dealer
-def get_dealer_details(request, ):
+def get_dealer_details(request):
     dealer_id = 15
     if request.method == "GET":
         url = "https://eu-de.functions.appdomain.cloud/api/v1/web/f531064e-b99e-4139-b829-b8a7b8d85715/review-package/give_review_dealer.json"
         # Get dealers from the URL
         reviews = restapis.get_dealer_reviews_from_cf(url,dealer_id)
-        # Return a list of dealer short name
-        return HttpResponse(reviews)
+        response_data = json.dumps(reviews)
+        #the reviews here is dictionary
+        return JsonResponse(response_data, safe=False)
 
-#call Watson NLU for analyzing the sentiment/tone for each review
-def get_dealer_reviews_from_cf(request):
-    text = "Under the IBM Board Corporate Governance Guidelines, the Directors and Corporate Governance Committee and the full Board annually review the financial and other relationships between the independent directors and IBM as part of the assessment of director independence. The Directors and Corporate Governance Committee makes recommendations to the Board about the independence of non-management directors, and the Board determines whether those directors are independent. In addition to this annual assessment of director independence, independence is monitored by the Directors and Corporate Governance Committee and the full Board on an ongoing basis."
-    return restapis.analyze_review_sentiments(text)
 
 
 
 
 # Create a `add_review` view to submit a review
-# def add_review(request, dealer_id):
-# ...
+def add_review(request, ):
+    dealer_id = 15
+
+    #this should be switch later
+    #if request.method == "POST":         
+    if request.method == "GET": 
+        # review = {}
+        # review["time"] = datetime.utcnow().isoformat()
+        # review["dealership"] = dealer_id
+        # review["name"] = request.user.name
+        # review["review"] = request.POST.get("review")
+        # review["purchase"] = request.POST.get("purchase")
+        json_payload = {}
+        json_payload = {
+            "name": "test",
+            "dealership": "test",
+            "review": "test",
+            "purchase": "test",
+            "purchase_date": "test",
+            "car_make": "test",
+            "car_model": "test",
+            "car_year": 2010
+        }
+        
+        #json_payload["review"] = review
+        url = "https://eu-de.functions.appdomain.cloud/api/v1/web/f531064e-b99e-4139-b829-b8a7b8d85715/review-package/addreview_seq.json"
+        response = restapis.post_request(url, json_payload = json_payload)
+        return HttpResponse(response)
+
 

@@ -2,50 +2,50 @@ import requests
 import json
 from .models import CarDealer,Review
 from requests.auth import HTTPBasicAuth
+from ibm_watson import NaturalLanguageUnderstandingV1
+from ibm_cloud_sdk_core.authenticators import IAMAuthenticator
+from ibm_watson.natural_language_understanding_v1 \
+    import Features, SentimentOptions
+
 
 # Create a `post_request` to make HTTP POST requests
 # e.g., response = requests.post(url, params=kwargs, json=payload)
-def post_request(url, params=None, data=None):
+def post_request(url, json_payload, **kwargs):    
     try:
-        response = requests.post(url, params=params, json=data)
-        
-        if response.status_code == requests.codes.ok:
-            return response.json()
-        else:
-            response.raise_for_status()
-    except requests.exceptions.HTTPError as error:
-        print(f"HTTP error occurred: {error}")
-    except Exception as error:
-        print(f"Other error occurred: {error}")
+        response = requests.post(url,json=json_payload,params=kwargs)
+        response.raise_for_status()
+        print("post command used")
+        return response.json()
+    except requests.exceptions.HTTPError as errh:
+        print("Http Error:", errh)
+    except requests.exceptions.ConnectionError as errc:
+        print("Error Connecting:", errc)
+    except requests.exceptions.Timeout as errt:
+        print("Timeout Error:", errt)
+    except requests.exceptions.RequestException as err:
+        print("Something went wrong", err)
 # Create a `get_request` to make HTTP GET requests
 # e.g., response = requests.get(url, params=params, headers={'Content-Type': 'application/json'},
 #                                     auth=HTTPBasicAuth('apikey', api_key))
-def get_request(url,**kwargs):
-    print(kwargs['api_key'])
-    print("GET from {} ".format(url))
-    json_data = 0
+def get_request(url, **kwargs):
 
-    if "api_key" in kwargs:
-    # Call get method of requests library with URL and parameters
+    if "apikey" in kwargs :
         try:
-            print("API—KEY USED")
-            params = dict()
-            params["text"] = kwargs["text"]
-            params["version"] = kwargs["version"]
-            params["features"] = kwargs["features"]
-            params["return_analyzed_text"] = kwargs["return_analyzed_text"]
-            response = requests.get(url, headers={'Content-Type': 'application/json'},
-                                        params=params["text"],auth=HTTPBasicAuth('apikey', kwargs['api_key']))
-            
-            # status_code = response.status_code
-            # print("With status {} ".format(status_code))
-            json_data = json.loads(response.text)
-            return json_data
-        except:
-        # If any error occurs
-            print("Network exception occurred")
-            pass
-    else:            
+            authenticator = IAMAuthenticator(kwargs.get("apikey"))
+            natural_language_understanding = NaturalLanguageUnderstandingV1(
+                version='2022-04-07',
+                authenticator=authenticator
+            )
+            natural_language_understanding.set_service_url(url)
+            response = natural_language_understanding.analyze(
+                text=kwargs.get("text"),
+                features=Features(sentiment=SentimentOptions())).get_result()
+            #print(json.dumps(response, indent=2))
+            return response
+        except Exception as e:
+            print("Exception occurred: {}".format(str(e)))
+            return None
+    else:
         try: 
             response = requests.get(url, headers={'Content-Type': 'application/json'},
                                             params=kwargs)
@@ -56,7 +56,7 @@ def get_request(url,**kwargs):
             return json_data                          
         except:
             print("Network exception occurred")
-            pass
+            return 404
 
 
 
@@ -90,7 +90,7 @@ def get_dealers_from_cf(url, **kwargs):
 def get_dealer_by_id(url, dealerId):
     result = None
     data = {"id": dealerId}
-    json_result = post_request(url, data = data) # here is diction
+    json_result = post_request(url, json_payload = data) # here is diction
     if json_result:
         dealer = json_result.get("docs") # here is list
         dealer = dealer[0]
@@ -114,28 +114,31 @@ def get_dealer_by_id(url, dealerId):
 def get_dealer_reviews_from_cf(url, dealerId):
     result = None
     data = {"dealership": dealerId}
-    json_result = post_request(url, data = data)
-    reviews = []
+    json_result = post_request(url, json_payload = data)
+    sentilist = {}
     if json_result:
         # Get the rows field from JSON response
         docs = json_result.get("docs")
-        print(docs)
+        #print(docs)
         # Iterate through the rows
         for doc in docs:
             # Get the doc field from row
             # Create a  Review object with values in the doc object
-            review = Review(
-                name=doc.get('name'),
-                dealership=doc.get('dealership'),
-                review=doc.get('review'),
-                purchase=doc.get('purchase'),
-                purchase_date=doc.get('purchase_date'),
-                car_make=doc.get('car_make'),
-                car_model=doc.get('car_model'),
-                car_year=doc.get('car_year')
-            )
-            reviews.append(review)
-    return reviews
+            # review = Review(
+            #     name=doc.get('name'),
+            #     dealership=doc.get('dealership'),
+            #     review=doc.get('review'),
+            #     purchase=doc.get('purchase'),
+            #     purchase_date=doc.get('purchase_date'),
+            #     car_make=doc.get('car_make'),
+            #     car_model=doc.get('car_model'),
+            #     car_year=doc.get('car_year')
+            # )
+            sentiment = analyze_review_sentiments(doc.get("review"))
+            sentilist.update({doc.get('name'):sentiment})
+
+    print(sentilist)
+    return sentilist
 
 # Create an `analyze_review_sentiments` method to call Watson NLU and analyze text
 # def analyze_review_sentiments(text):
@@ -145,25 +148,7 @@ def get_dealer_reviews_from_cf(url, dealerId):
 def analyze_review_sentiments(text):
     url = "https://api.eu-de.natural-language-understanding.watson.cloud.ibm.com/instances/fbec6622-ada0-42c5-916c-2b0dc1f32005"
     api_key = "tIAe9_JDEmkvEXsIsubk-Od2FTu6LkmsijgsA-7BWU_9"
-
-    # Define the parameters for the NLU request
-    params = {
-        "text": text,
-        "features": {
-            "sentiment": {}
-        }
-    }
-
     # Send the request to the NLU service
-    response = get_request(url=url,api_key=api_key,params=params)
-
-    # # Check the response status code
-    if response.status_code != 200:
-        raise ValueError("Failed to analyze sentiment: {}".format(response.text))
-
-    # Parse the response JSON and extract the sentiment label
-    data = json.loads(response.text)
-    sentiment_label = data["sentiment"]["document"]["label"]
-
+    response = get_request(url=url,apikey=api_key,text = text)
     # Return the sentiment label
-    return response   
+    return response['sentiment']['document']['label']
