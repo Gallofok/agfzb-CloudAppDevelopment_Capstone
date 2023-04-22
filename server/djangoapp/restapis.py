@@ -21,24 +21,44 @@ def post_request(url, params=None, data=None):
 # e.g., response = requests.get(url, params=params, headers={'Content-Type': 'application/json'},
 #                                     auth=HTTPBasicAuth('apikey', api_key))
 def get_request(url,**kwargs):
-    print(kwargs)
+    print(kwargs['api_key'])
     print("GET from {} ".format(url))
-    try:
-        # Call get method of requests library with URL and parameters
-        if "api_key" in params:
+    json_data = 0
+
+    if "api_key" in kwargs:
+    # Call get method of requests library with URL and parameters
+        try:
+            print("API—KEY USED")
+            params = dict()
+            params["text"] = kwargs["text"]
+            params["version"] = kwargs["version"]
+            params["features"] = kwargs["features"]
+            params["return_analyzed_text"] = kwargs["return_analyzed_text"]
             response = requests.get(url, headers={'Content-Type': 'application/json'},
-                                        params=kwargs,auth=HTTPBasicAuth('apikey', api_key))
-        else:            
-            response = requests.get(url, headers={'Content-Type': 'application/json'},
-                                        params=kwargs)
-                                
-    except:
+                                        params=params["text"],auth=HTTPBasicAuth('apikey', kwargs['api_key']))
+            
+            # status_code = response.status_code
+            # print("With status {} ".format(status_code))
+            json_data = json.loads(response.text)
+            return json_data
+        except:
         # If any error occurs
-        print("Network exception occurred")
-    status_code = response.status_code
-    print("With status {} ".format(status_code))
-    json_data = json.loads(response.text)
-    return json_data
+            print("Network exception occurred")
+            pass
+    else:            
+        try: 
+            response = requests.get(url, headers={'Content-Type': 'application/json'},
+                                            params=kwargs)
+
+            status_code = response.status_code
+            print("With status {} ".format(status_code))
+            json_data = json.loads(response.text)
+            return json_data                          
+        except:
+            print("Network exception occurred")
+            pass
+
+
 
 
 
@@ -122,11 +142,28 @@ def get_dealer_reviews_from_cf(url, dealerId):
 # - Call get_request() with specified arguments
 # - Get the returned sentiment label such as Positive or Negative
 
-def analyze_review_sentiments(url,api_key,**kwargs):
-    params = dict()
-    params["text"] = kwargs["text"]
-    params["version"] = kwargs["version"]
-    params["features"] = kwargs["features"]
-    params["return_analyzed_text"] = kwargs["return_analyzed_text"]
-    response = requests.get(url, params=params, headers={'Content-Type': 'application/json'},
-                                    auth=HTTPBasicAuth('apikey', api_key))
+def analyze_review_sentiments(text):
+    url = "https://api.eu-de.natural-language-understanding.watson.cloud.ibm.com/instances/fbec6622-ada0-42c5-916c-2b0dc1f32005"
+    api_key = "tIAe9_JDEmkvEXsIsubk-Od2FTu6LkmsijgsA-7BWU_9"
+
+    # Define the parameters for the NLU request
+    params = {
+        "text": text,
+        "features": {
+            "sentiment": {}
+        }
+    }
+
+    # Send the request to the NLU service
+    response = get_request(url=url,api_key=api_key,params=params)
+
+    # # Check the response status code
+    if response.status_code != 200:
+        raise ValueError("Failed to analyze sentiment: {}".format(response.text))
+
+    # Parse the response JSON and extract the sentiment label
+    data = json.loads(response.text)
+    sentiment_label = data["sentiment"]["document"]["label"]
+
+    # Return the sentiment label
+    return response   

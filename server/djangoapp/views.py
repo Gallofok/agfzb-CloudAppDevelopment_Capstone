@@ -97,8 +97,9 @@ def get_dealer_details(request, ):
         return HttpResponse(reviews)
 
 #call Watson NLU for analyzing the sentiment/tone for each review
-def get_dealer_reviews_from_cf():
-    pass
+def get_dealer_reviews_from_cf(request):
+    text = "Under the IBM Board Corporate Governance Guidelines, the Directors and Corporate Governance Committee and the full Board annually review the financial and other relationships between the independent directors and IBM as part of the assessment of director independence. The Directors and Corporate Governance Committee makes recommendations to the Board about the independence of non-management directors, and the Board determines whether those directors are independent. In addition to this annual assessment of director independence, independence is monitored by the Directors and Corporate Governance Committee and the full Board on an ongoing basis."
+    return restapis.analyze_review_sentiments(text)
 
 
 
