@@ -11,12 +11,11 @@ import logging
 import json
 from django.contrib.auth.forms import AuthenticationForm,UserCreationForm
 import requests
-# Get an instance of a logger
-
 from django.http import JsonResponse
-logger = logging.getLogger(__name__)
-# Create your views here.
+from .models import CarModel,CarDealer,CarMake
 
+# Get an instance of a logger
+logger = logging.getLogger(__name__)
 
 def about(request):
     return render(request, 'djangoapp/about.html')
@@ -65,70 +64,117 @@ def get_dealerships(request):
         # Get dealers from the URL
         dealerships = restapis.get_dealers_from_cf(url)
         # Concat all dealer's short name
-        dealer_names = ' '.join([dealer.short_name for dealer in dealerships])
+        context = {'dealerships': dealerships}
         # Return a list of dealer short name
-        return HttpResponse(dealer_names)
+        return render(request, 'djangoapp/index.html', context)
 
-
-# def get_dealerships(request):
-#     context = {}
-#     if request.method == "GET":
-#         return render(request, 'djangoapp/index.html', context)
 
 #look the specific dealer information
-def get_dealer_id(request, ):
-    dealer_id = 15
+def get_dealer_id(request,dealer_id):
     if request.method == "GET":
         url = "https://eu-de.functions.appdomain.cloud/api/v1/web/f531064e-b99e-4139-b829-b8a7b8d85715/dealership-package/dealergetbyid.json"
         # Get dealers from the URL
-        reviews = restapis.get_dealer_by_id(url,dealer_id)
+        dealer = restapis.get_dealer_by_id(url,dealer_id)
+        # context = {
+        # 'name': dealer["full_name"],
+        # 'city': dealer["city"],
+        # 'address': dealer["address"],
+        # 'zip': dealer["zip"],
+        # 'state': dealer["state"],
+        # }
         # Return a list of dealer short name
-        return HttpResponse(reviews)
+
+        return dealer
 
 
 # Create a `get_dealer_details` view to render the reviews of a dealer
-def get_dealer_details(request):
-    dealer_id = 15
+def get_dealer_details(request,dealer_id):
     if request.method == "GET":
         url = "https://eu-de.functions.appdomain.cloud/api/v1/web/f531064e-b99e-4139-b829-b8a7b8d85715/review-package/give_review_dealer.json"
         # Get dealers from the URL
+        context = {}
+        dealer = get_dealer_id(request,dealer_id)
         reviews = restapis.get_dealer_reviews_from_cf(url,dealer_id)
-        response_data = json.dumps(reviews)
+        if dealer:
+            context["dealer"] = dealer
+            context["reviews"] = reviews
         #the reviews here is dictionary
-        return JsonResponse(response_data, safe=False)
-
-
-
+        return render(request, 'djangoapp/dealer_details.html', context)
 
 
 # Create a `add_review` view to submit a review
-def add_review(request, ):
-    dealer_id = 15
+# def add_review(request,dealer_id):
+#     #this should be switch later
+#     if request.method == "POST":         
+#         # review = {}
+#         # review["time"] = datetime.utcnow().isoformat()
+#         # review["dealership"] = dealer_id
+#         # review["name"] = request.user.name
+#         # review["review"] = request.POST.get("review")
+#         # review["purchase"] = request.POST.get("purchase")
+#         json_payload = {}
+#         #json_payload["review"] = review
+#         url = "https://eu-de.functions.appdomain.cloud/api/v1/web/f531064e-b99e-4139-b829-b8a7b8d85715/review-package/addreview_seq.json"
+#         response = restapis.post_request(url, json_payload = json_payload)
+#         return render(request, 'djangoapp/add_review.html', context)
 
-    #this should be switch later
-    #if request.method == "POST":         
-    if request.method == "GET": 
-        # review = {}
-        # review["time"] = datetime.utcnow().isoformat()
-        # review["dealership"] = dealer_id
-        # review["name"] = request.user.name
-        # review["review"] = request.POST.get("review")
-        # review["purchase"] = request.POST.get("purchase")
-        json_payload = {}
-        json_payload = {
-            "name": "test",
-            "dealership": "test",
-            "review": "test",
-            "purchase": "test",
-            "purchase_date": "test",
-            "car_make": "test",
-            "car_model": "test",
-            "car_year": 2010
+
+# Create a `add_review` view to submit a review
+def add_review(request, dealer_id):
+    dealer = get_dealer_id(request,dealer_id)
+
+    # Handle GET request
+    if request.method == "GET":
+        cars = CarModel.objects.filter(dealer_id=dealer_id)
+        context = {
+            'dealer_id': dealer_id,
+            'dealer': dealer,
+            'cars': cars,
         }
+        return render(request, 'djangoapp/add_review.html', context)
+    if request.method == "POST":
+        content = request.POST.get('content')
+        purchase_check = request.POST.get('purchasecheck') == 'on'
+        car_make = request.POST.get('carmake')
+        car_model = request.POST.get('carmodel')
+        car_year = request.POST.get('caryear')
+        purchase_date_str = request.POST.get('purchasedate')
+        purchase_date = datetime.strptime(purchase_date_str, '%Y-%m-%d').utcnow().isoformat()
+
+        # Create a JSON payload with the data
+        # json_payload = {
+        #     'name': request.user.username,
+        #     'dealership': dealer_id,
+        #     'review': content,
+        #     'purchase': purchase_check,
+        #     'purchase_date': purchase_date,
+        #     'car_make': car_make,
+        #     'car_model': car_model,
+        #     'car_year': car_year
+        # }
+
         
-        #json_payload["review"] = review
+
+        json_payload = {
+            'name': "test",
+            'dealership': 1,
+            'review': "test",
+            'purchase': "test",
+            'purchase_date': "test",
+            'car_make': "test",
+            'car_model': "test",
+            'car_year': "test"
+        }
+        # Send the payload to the server
         url = "https://eu-de.functions.appdomain.cloud/api/v1/web/f531064e-b99e-4139-b829-b8a7b8d85715/review-package/addreview_seq.json"
-        response = restapis.post_request(url, json_payload = json_payload)
-        return HttpResponse(response)
+        response = restapis.post_request(url, json_payload=json_payload)
 
-
+        if response.get("error"):
+            messages.error(request, 'There was an error submitting your review.')
+        else:
+            messages.success(request, 'Your review has been submitted successfully!')
+            print("post sucess")
+            return redirect('djangoapp:dealer_details', dealer_id=dealer_id)
+            
+            
+    return render(request, 'djangoapp/add_review.html', {'dealer_id': dealer_id})
