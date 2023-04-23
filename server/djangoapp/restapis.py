@@ -115,7 +115,8 @@ def get_dealer_reviews_from_cf(url, dealerId):
     result = None
     data = {"dealership": dealerId}
     json_result = post_request(url, json_payload = data)
-    sentilist = {}
+    reviewlist = []
+
     if json_result:
         # Get the rows field from JSON response
         docs = json_result.get("docs")
@@ -124,21 +125,21 @@ def get_dealer_reviews_from_cf(url, dealerId):
         for doc in docs:
             # Get the doc field from row
             # Create a  Review object with values in the doc object
-            # review = Review(
-            #     name=doc.get('name'),
-            #     dealership=doc.get('dealership'),
-            #     review=doc.get('review'),
-            #     purchase=doc.get('purchase'),
-            #     purchase_date=doc.get('purchase_date'),
-            #     car_make=doc.get('car_make'),
-            #     car_model=doc.get('car_model'),
-            #     car_year=doc.get('car_year')
-            # )
-            sentiment = analyze_review_sentiments(doc.get("review"))
-            sentilist.update({doc.get('name'):sentiment})
+            review = Review(
+                name=doc.get('name'),
+                dealership=doc.get('dealership'),
+                review=doc.get('review'),
+                purchase=doc.get('purchase'),
+                purchase_date=doc.get('purchase_date'),
+                car_make=doc.get('car_make'),
+                car_model=doc.get('car_model'),
+                car_year=doc.get('car_year'),
+                sentiment = analyze_review_sentiments(doc.get("review"))
+            )
+            
+            reviewlist.append(review)
 
-    print(sentilist)
-    return sentilist
+    return reviewlist
 
 # Create an `analyze_review_sentiments` method to call Watson NLU and analyze text
 # def analyze_review_sentiments(text):

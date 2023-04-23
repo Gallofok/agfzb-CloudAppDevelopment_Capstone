@@ -135,36 +135,34 @@ def add_review(request, dealer_id):
     if request.method == "POST":
         content = request.POST.get('content')
         purchase_check = request.POST.get('purchasecheck') == 'on'
-        car_make = request.POST.get('carmake')
-        car_model = request.POST.get('carmodel')
-        car_year = request.POST.get('caryear')
-        purchase_date_str = request.POST.get('purchasedate')
-        purchase_date = datetime.strptime(purchase_date_str, '%Y-%m-%d').utcnow().isoformat()
-
+        car_make = "VM"
+        car_model = "car"
+        car_year = "2010"
+        purchase_date = request.POST.get('purchasedate')
         # Create a JSON payload with the data
-        # json_payload = {
-        #     'name': request.user.username,
-        #     'dealership': dealer_id,
-        #     'review': content,
-        #     'purchase': purchase_check,
-        #     'purchase_date': purchase_date,
-        #     'car_make': car_make,
-        #     'car_model': car_model,
-        #     'car_year': car_year
-        # }
+        json_payload = {
+            'name': request.user.username,
+            'dealership': dealer_id,
+            'review': content,
+            'purchase': purchase_check,
+            'purchase_date': purchase_date,
+            'car_make': car_make,
+            'car_model': car_model,
+            'car_year': car_year
+        }
 
         
 
-        json_payload = {
-            'name': "test",
-            'dealership': 1,
-            'review': "test",
-            'purchase': "test",
-            'purchase_date': "test",
-            'car_make': "test",
-            'car_model': "test",
-            'car_year': "test"
-        }
+        # json_payload = {
+        #     'name': "test",
+        #     'dealership': 1,
+        #     'review': "this is good dealer",
+        #     'purchase': "test",
+        #     'purchase_date': "test",
+        #     'car_make': "test",
+        #     'car_model': "test",
+        #     'car_year': "test"
+        # }
         # Send the payload to the server
         url = "https://eu-de.functions.appdomain.cloud/api/v1/web/f531064e-b99e-4139-b829-b8a7b8d85715/review-package/addreview_seq.json"
         response = restapis.post_request(url, json_payload=json_payload)
