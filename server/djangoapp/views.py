@@ -75,15 +75,6 @@ def get_dealer_id(request,dealer_id):
         url = "https://eu-de.functions.appdomain.cloud/api/v1/web/f531064e-b99e-4139-b829-b8a7b8d85715/dealership-package/dealergetbyid.json"
         # Get dealers from the URL
         dealer = restapis.get_dealer_by_id(url,dealer_id)
-        # context = {
-        # 'name': dealer["full_name"],
-        # 'city': dealer["city"],
-        # 'address': dealer["address"],
-        # 'zip': dealer["zip"],
-        # 'state': dealer["state"],
-        # }
-        # Return a list of dealer short name
-
         return dealer
 
 
@@ -135,9 +126,11 @@ def add_review(request, dealer_id):
     if request.method == "POST":
         content = request.POST.get('content')
         purchase_check = request.POST.get('purchasecheck') == 'on'
-        car_make = "VM"
-        car_model = "car"
-        car_year = "2010"
+        car_id = request.POST.get('car')
+        car = CarModel.objects.get(pk=car_id)
+        car_make = car.car_make.name
+        car_model = car.name
+        car_year = car.year.strftime('%Y')
         purchase_date = request.POST.get('purchasedate')
         # Create a JSON payload with the data
         json_payload = {
@@ -151,18 +144,6 @@ def add_review(request, dealer_id):
             'car_year': car_year
         }
 
-        
-
-        # json_payload = {
-        #     'name': "test",
-        #     'dealership': 1,
-        #     'review': "this is good dealer",
-        #     'purchase': "test",
-        #     'purchase_date': "test",
-        #     'car_make': "test",
-        #     'car_model': "test",
-        #     'car_year': "test"
-        # }
         # Send the payload to the server
         url = "https://eu-de.functions.appdomain.cloud/api/v1/web/f531064e-b99e-4139-b829-b8a7b8d85715/review-package/addreview_seq.json"
         response = restapis.post_request(url, json_payload=json_payload)
