@@ -60,6 +60,7 @@ class Review(models.Model):
     car_make = models.CharField(max_length=50)
     car_model = models.CharField(max_length=50)
     car_year = models.IntegerField()
+    sentiment = models.CharField(max_length=50)
 
     def __str__(self):
         return  self.review 
